@@ -85,4 +85,23 @@ public class AuthService {
         List<String> roles = List.of("USER"); // Assuming a single role for now
         return jwtUtil.generateToken(user.getEmail(), roles);
     }
+
+    public User registerOrUpdateGoogleUser(String email, String name) {
+        // Check if the user already exists
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isPresent()) {
+            // Update the user's name if it has changed
+            User existingUser = userOpt.get();
+            existingUser.setName(name);
+            return userRepository.save(existingUser);
+        } else {
+            // Register a new Google user
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(name);
+            newUser.setAuthProvider(AuthProvider.GOOGLE); // Set the auth provider as GOOGLE
+            return userRepository.save(newUser);
+        }
+    }
 }

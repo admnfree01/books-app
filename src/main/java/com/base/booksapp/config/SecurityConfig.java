@@ -38,23 +38,19 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    /**
-     * Security filter chain configuration for Spring Security.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
+        http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/oauth2/**").permitAll()
-                        .anyRequest().authenticated() // Protect all other endpoints
+                        .requestMatchers("/auth/**", "/login/oauth2/**").permitAll() // Permit auth and OAuth2 URLs
+                        .anyRequest().authenticated() // Protect other endpoints
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-
-                .oauth2Login(oauth2 -> oauth2 // Enable OAuth2 Login
-                        .defaultSuccessUrl("/auth/google/success", true) // Redirect after successful login
-                ); // Add JWT filter
-
+//                .oauth2Login(oauth2 -> oauth2
+//                        .defaultSuccessUrl("/auth/google/success", true) // Redirect after successful login
+//                )
+        ;
 
         return http.build();
     }

@@ -6,10 +6,9 @@ import com.base.booksapp.dto.RegisterRequest;
 import com.base.booksapp.model.User;
 import com.base.booksapp.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,5 +28,21 @@ public class AuthController {
         // Generate token for the registered user
         String token = authService.generateTokenForUser(registeredUser);
         return new LoginResponse(token);
+    }
+
+    @GetMapping("/google/success")
+    public String googleAuthSuccess(Authentication authentication) {
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+
+        // Check if the user already exists in the database
+        User user = authService.registerOrUpdateGoogleUser(email, name);
+
+        // Generate a JWT token for the authenticated user
+        String token = authService.generateTokenForUser(user);
+
+        return String.format("Google Auth Successful! JWT Token: %s", token);
     }
 }

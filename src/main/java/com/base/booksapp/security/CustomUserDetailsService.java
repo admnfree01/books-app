@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -21,10 +23,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
+        // Handle users with no password (e.g., Google OAuth2 users)
+        String password = user.getPassword() != null ? user.getPassword() : ""; // Empty password for Google users
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
-                .password(user.getPassword())
-                .roles("USER") // Assign roles (e.g., USER, ADMIN) here
+                .password(password) // Provide empty password for Google users
+                .authorities(Collections.singletonList(() -> "ROLE_USER")) // Assign roles
                 .build();
     }
 }
